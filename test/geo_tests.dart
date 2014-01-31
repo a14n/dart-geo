@@ -20,6 +20,26 @@ import 'package:geo/geo.dart';
 import 'package:unittest/unittest.dart';
 
 main() {
+  group('LatLng', (){
+    test('control of range of lat and lng',(){
+      expect(() => new LatLng(-80, 0), returnsNormally);
+      expect(() => new LatLng(-100, 0), throws);
+      expect(() => new LatLng(80, 0), returnsNormally);
+      expect(() => new LatLng(100, 0), throws);
+      expect(() => new LatLng(0, -170), returnsNormally);
+      expect(() => new LatLng(0, -190), throws);
+      expect(() => new LatLng(0, 170), returnsNormally);
+      expect(() => new LatLng(0, 190), throws);
+    });
+
+    test('==',(){
+      final p1 = new LatLng(1, 2.5);
+      final p2 = new LatLng(1, 2.5);
+      final p3 = new LatLng(1, 3);
+      expect(p1 == p2, equals(true));
+      expect(p1 == p3, equals(false));
+    });
+  });
   group('computeDistanceBetween', (){
     test('distance to the same point is 0',(){
       final p = new LatLng(0, 0);

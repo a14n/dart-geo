@@ -52,7 +52,12 @@ class LatLng {
       _latInRad = new _CachedValue<num>(() => isDeg ? degToRad(lat) : lat),
       _lngInRad = new _CachedValue<num>(() => isDeg ? degToRad(lng) : lng),
       _latInDeg = new _CachedValue<num>(() => isDeg ? lat : radToDeg(lat)),
-      _lngInDeg = new _CachedValue<num>(() => isDeg ? lng : radToDeg(lng));
+      _lngInDeg = new _CachedValue<num>(() => isDeg ? lng : radToDeg(lng)) {
+    if (this.lat < -90 || 90 < this.lat)
+      throw new RangeError.range(this.lat, -90, 90);
+    if (this.lng < -180 || 180 < this.lng)
+      throw new RangeError.range(this.lng, -180, 180);
+  }
   LatLng(num lat, num lng) : this._(lat, lng, true);
   LatLng.rad(num lat, num lng) : this._(lat, lng, false);
 
@@ -63,14 +68,21 @@ class LatLng {
   num get lng => _lngInDeg.value;
 
   String toString() => 'LatLng(lat:$lat, lng:$lng)';
+
+  int get hashCode => lat.hashCode + lng.hashCode;
+
+  operator ==(Object other) =>
+      other is LatLng && lat == other.lat && lng == other.lng;
 }
 
-final EARTH_RADIUS = 6371000.0;
+const EARTH_RADIUS = 6371000.0;
 
-double computeDistanceBetween(LatLng p1, LatLng p2, [num radius]) =>
+double computeDistanceBetween(LatLng p1, LatLng p2,
+                              [num radius = EARTH_RADIUS]) =>
     computeDistanceHaversine(p1, p2, radius);
 
-double computeDistanceHaversine(LatLng p1, LatLng p2, [num radius]) {
+double computeDistanceHaversine(LatLng p1, LatLng p2,
+                                [num radius = EARTH_RADIUS]) {
   final sDLat = sin((p2.latInRad - p1.latInRad) / 2);
   final sDLng = sin((p2.lngInRad - p1.lngInRad) / 2);
   final a = sDLat * sDLat + sDLng * sDLng * cos(p1.latInRad) * cos(p2.latInRad);
@@ -78,7 +90,8 @@ double computeDistanceHaversine(LatLng p1, LatLng p2, [num radius]) {
   return (radius != null ? radius : EARTH_RADIUS) * c;
 }
 
-double computeDistanceSphericalLawCosines(LatLng p1, LatLng p2, [num radius]) {
+double computeDistanceSphericalLawCosines(LatLng p1, LatLng p2,
+                                          [num radius = EARTH_RADIUS]) {
   final cosLat1 = cos(p1.latInRad);
   final sinLat1 = sin(p1.latInRad);
   final cosLat2 = cos(p2.latInRad);
@@ -90,7 +103,7 @@ double computeDistanceSphericalLawCosines(LatLng p1, LatLng p2, [num radius]) {
 }
 
 double computeDistanceEquirectangularApproximation(LatLng p1, LatLng p2,
-                                                   [num radius]){
+                                                   [num radius = EARTH_RADIUS]){
   var x = (p2.lngInRad - p1.lngInRad) * cos((p1.latInRad + p2.latInRad) / 2);
   var y = p2.latInRad - p1.latInRad;
   return (radius != null ? radius : EARTH_RADIUS) * sqrt(x * x + y * y);
@@ -105,7 +118,8 @@ double computeHeading(LatLng p1, LatLng p2) {
   return radToDeg(atan2(y, x));
 }
 
-LatLng computeOffset(LatLng from, num distance, num heading, [num radius]) {
+LatLng computeOffset(LatLng from, num distance, num heading,
+                     [num radius = EARTH_RADIUS]) {
   final h = degToRad(heading);
 
   final a = distance / (radius != null ? radius : EARTH_RADIUS);
