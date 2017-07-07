@@ -12,60 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library latlng;
+import 'dart:math' as math;
 
-import 'dart:math';
+import 'package:meta/meta.dart';
 
 // see http://www.movable-type.co.uk/scripts/latlong.html
 
-num degToRad(num deg) => deg * (PI / 180.0);
-num radToDeg(num rad) => rad * (180.0 / PI);
-
-typedef T _Supplier<T>();
-class _CachedValue<T> {
-  final _Supplier<T> load;
-  T _value;
-  bool _computed = false;
-
-  _CachedValue(this.load);
-
-  T get value {
-    if (!_computed) {
-      _value = load();
-      _computed = true;
-    }
-    return _value;
-  }
-
-  void invalidate() {
-    _value = null;
-    _computed = false;
-  }
-}
+double degToRad(num deg) => deg * (math.PI / 180.0);
+double radToDeg(num rad) => rad * (180.0 / math.PI);
 
 /// The coordinates in Degrees
+@immutable
 class LatLng {
-  final _CachedValue<num> _latInRad, _lngInRad;
-  final _CachedValue<num> _latInDeg, _lngInDeg;
+  const LatLng(
+    this.lat,
+    this.lng,
+  ); //:assert(lat != null), assert(lng != null);
 
-  LatLng._(num lat, num lng, bool isDeg) :
-      _latInRad = new _CachedValue<num>(() => isDeg ? degToRad(lat) : lat),
-      _lngInRad = new _CachedValue<num>(() => isDeg ? degToRad(lng) : lng),
-      _latInDeg = new _CachedValue<num>(() => isDeg ? lat : radToDeg(lat)),
-      _lngInDeg = new _CachedValue<num>(() => isDeg ? lng : radToDeg(lng)) {
-    if (this.lat < -90 || 90 < this.lat)
-      throw new RangeError.range(this.lat, -90, 90);
-    if (this.lng < -180 || 180 < this.lng)
-      throw new RangeError.range(this.lng, -180, 180);
+  final num lat;
+  final num lng;
+
+  bool isCloseTo(LatLng other, {maxMargin: 1.0E-9}) {
+    assert(other != null);
+    assert(maxMargin != null && maxMargin >= 0);
+    final margin = math.max((lat - other.lat).abs(), (lng - other.lng).abs());
+    return margin <= maxMargin;
   }
-  LatLng(num lat, num lng) : this._(lat, lng, true);
-  LatLng.rad(num lat, num lng) : this._(lat, lng, false);
-
-  num get latInRad => _latInRad.value;
-  num get lngInRad => _lngInRad.value;
-
-  num get lat => _latInDeg.value;
-  num get lng => _lngInDeg.value;
 
   String toString() => 'LatLng(lat:$lat, lng:$lng)';
 
@@ -77,57 +49,91 @@ class LatLng {
 
 const EARTH_RADIUS = 6371000.0;
 
-double computeDistanceBetween(LatLng p1, LatLng p2,
-                              [num radius = EARTH_RADIUS]) =>
-    computeDistanceHaversine(p1, p2, radius);
-
-double computeDistanceHaversine(LatLng p1, LatLng p2,
-                                [num radius = EARTH_RADIUS]) {
-  final sDLat = sin((p2.latInRad - p1.latInRad) / 2);
-  final sDLng = sin((p2.lngInRad - p1.lngInRad) / 2);
-  final a = sDLat * sDLat + sDLng * sDLng * cos(p1.latInRad) * cos(p2.latInRad);
-  final c = 2 * atan2(sqrt(a), sqrt(1 - a));
-  return (radius != null ? radius : EARTH_RADIUS) * c;
+double computeDistanceBetween(
+  LatLng p1,
+  LatLng p2, {
+  num radius = EARTH_RADIUS,
+}) {
+  assert(p1 != null);
+  assert(p2 != null);
+  assert(radius != null);
+  return computeDistanceHaversine(p1, p2, radius: radius);
 }
 
-double computeDistanceSphericalLawCosines(LatLng p1, LatLng p2,
-                                          [num radius = EARTH_RADIUS]) {
-  final cosLat1 = cos(p1.latInRad);
-  final sinLat1 = sin(p1.latInRad);
-  final cosLat2 = cos(p2.latInRad);
-  final sinLat2 = sin(p2.latInRad);
-
-  return (radius != null ? radius : EARTH_RADIUS) *
-      acos(cosLat1 * cosLat2 * cos(p1.lngInRad - p2.lngInRad) +
-          sinLat1 * sinLat2);
+double computeDistanceHaversine(
+  LatLng p1,
+  LatLng p2, {
+  num radius = EARTH_RADIUS,
+}) {
+  assert(p1 != null);
+  assert(p2 != null);
+  assert(radius != null);
+  final sDLat = math.sin((degToRad(p2.lat) - degToRad(p1.lat)) / 2);
+  final sDLng = math.sin((degToRad(p2.lng) - degToRad(p1.lng)) / 2);
+  final a = sDLat * sDLat +
+      sDLng * sDLng * math.cos(degToRad(p1.lat)) * math.cos(degToRad(p2.lat));
+  final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  return radius * c;
 }
 
-double computeDistanceEquirectangularApproximation(LatLng p1, LatLng p2,
-                                                   [num radius = EARTH_RADIUS]){
-  var x = (p2.lngInRad - p1.lngInRad) * cos((p1.latInRad + p2.latInRad) / 2);
-  var y = p2.latInRad - p1.latInRad;
-  return (radius != null ? radius : EARTH_RADIUS) * sqrt(x * x + y * y);
+double computeDistanceSphericalLawCosines(
+  LatLng p1,
+  LatLng p2, {
+  num radius = EARTH_RADIUS,
+}) {
+  assert(p1 != null);
+  assert(p2 != null);
+  assert(radius != null);
+  final cosLat1 = math.cos(degToRad(p1.lat));
+  final sinLat1 = math.sin(degToRad(p1.lat));
+  final cosLat2 = math.cos(degToRad(p2.lat));
+  final sinLat2 = math.sin(degToRad(p2.lat));
+  return radius *
+      math.acos(
+          cosLat1 * cosLat2 * math.cos(degToRad(p1.lng) - degToRad(p2.lng)) +
+              sinLat1 * sinLat2);
+}
+
+double computeDistanceEquirectangularApproximation(
+  LatLng p1,
+  LatLng p2, {
+  num radius = EARTH_RADIUS,
+}) {
+  assert(p1 != null);
+  assert(p2 != null);
+  assert(radius != null);
+  var x = (degToRad(p2.lng) - degToRad(p1.lng)) *
+      math.cos((degToRad(p1.lat) + degToRad(p2.lat)) / 2);
+  var y = degToRad(p2.lat) - degToRad(p1.lat);
+  return radius * math.sqrt(x * x + y * y);
 }
 
 double computeHeading(LatLng p1, LatLng p2) {
-  final dLng = p2.lngInRad - p1.lngInRad;
-
-  final y = sin(dLng) * cos(p2.latInRad);
-  final x = cos(p1.latInRad) * sin(p2.latInRad) -
-      sin(p1.latInRad) * cos(p2.latInRad) * cos(dLng);
-  return radToDeg(atan2(y, x));
+  assert(p1 != null);
+  assert(p2 != null);
+  final dLng = degToRad(p2.lng) - degToRad(p1.lng);
+  final y = math.sin(dLng) * math.cos(degToRad(p2.lat));
+  final x = math.cos(degToRad(p1.lat)) * math.sin(degToRad(p2.lat)) -
+      math.sin(degToRad(p1.lat)) * math.cos(degToRad(p2.lat)) * math.cos(dLng);
+  return radToDeg(math.atan2(y, x));
 }
 
-LatLng computeOffset(LatLng from, num distance, num heading,
-                     [num radius = EARTH_RADIUS]) {
+LatLng computeOffset(
+  LatLng from,
+  num distance,
+  num heading, {
+  num radius = EARTH_RADIUS,
+}) {
+  assert(from != null);
+  assert(distance != null);
+  assert(heading != null);
+  assert(radius != null);
   final h = degToRad(heading);
-
-  final a = distance / (radius != null ? radius : EARTH_RADIUS);
-
-  final lat2 = asin(sin(from.latInRad) * cos(a) +
-      cos(from.latInRad) * sin(a) * cos(h) );
-  final lng2 = from.lngInRad +
-      atan2(sin(h) * sin(a) * cos(from.latInRad),
-          cos(a) - sin(from.latInRad) * sin(lat2));
-  return new LatLng.rad(lat2, lng2);
+  final a = distance / radius;
+  final lat2 = math.asin(math.sin(degToRad(from.lat)) * math.cos(a) +
+      math.cos(degToRad(from.lat)) * math.sin(a) * math.cos(h));
+  final lng2 = degToRad(from.lng) +
+      math.atan2(math.sin(h) * math.sin(a) * math.cos(degToRad(from.lat)),
+          math.cos(a) - math.sin(degToRad(from.lat)) * math.sin(lat2));
+  return new LatLng(radToDeg(lat2), radToDeg(lng2));
 }
