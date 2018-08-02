@@ -18,8 +18,8 @@ import 'package:meta/meta.dart';
 
 // see http://www.movable-type.co.uk/scripts/latlong.html
 
-double degToRad(num deg) => deg * (math.PI / 180.0);
-double radToDeg(num rad) => rad * (180.0 / math.PI);
+num degToRad(num deg) => deg * (math.pi / 180.0);
+num radToDeg(num rad) => rad * (180.0 / math.pi);
 
 /// The coordinates in Degrees
 @immutable
@@ -32,27 +32,30 @@ class LatLng {
   final num lat;
   final num lng;
 
-  bool isCloseTo(LatLng other, {maxMargin: 1.0E-9}) {
+  bool isCloseTo(LatLng other, {num maxMargin = 1.0E-9}) {
     assert(other != null);
     assert(maxMargin != null && maxMargin >= 0);
     final margin = math.max((lat - other.lat).abs(), (lng - other.lng).abs());
     return margin <= maxMargin;
   }
 
+  @override
   String toString() => 'LatLng(lat:$lat, lng:$lng)';
 
+  @override
   int get hashCode => lat.hashCode + lng.hashCode;
 
-  operator ==(Object other) =>
+  @override
+  bool operator ==(Object other) =>
       other is LatLng && lat == other.lat && lng == other.lng;
 }
 
-const EARTH_RADIUS = 6371000.0;
+const earthRadius = 6371000.0;
 
-double computeDistanceBetween(
+num computeDistanceBetween(
   LatLng p1,
   LatLng p2, {
-  num radius = EARTH_RADIUS,
+  num radius = earthRadius,
 }) {
   assert(p1 != null);
   assert(p2 != null);
@@ -60,10 +63,10 @@ double computeDistanceBetween(
   return computeDistanceHaversine(p1, p2, radius: radius);
 }
 
-double computeDistanceHaversine(
+num computeDistanceHaversine(
   LatLng p1,
   LatLng p2, {
-  num radius = EARTH_RADIUS,
+  num radius = earthRadius,
 }) {
   assert(p1 != null);
   assert(p2 != null);
@@ -76,10 +79,10 @@ double computeDistanceHaversine(
   return radius * c;
 }
 
-double computeDistanceSphericalLawCosines(
+num computeDistanceSphericalLawCosines(
   LatLng p1,
   LatLng p2, {
-  num radius = EARTH_RADIUS,
+  num radius = earthRadius,
 }) {
   assert(p1 != null);
   assert(p2 != null);
@@ -94,21 +97,21 @@ double computeDistanceSphericalLawCosines(
               sinLat1 * sinLat2);
 }
 
-double computeDistanceEquirectangularApproximation(
+num computeDistanceEquirectangularApproximation(
   LatLng p1,
   LatLng p2, {
-  num radius = EARTH_RADIUS,
+  num radius = earthRadius,
 }) {
   assert(p1 != null);
   assert(p2 != null);
   assert(radius != null);
-  var x = (degToRad(p2.lng) - degToRad(p1.lng)) *
+  final x = (degToRad(p2.lng) - degToRad(p1.lng)) *
       math.cos((degToRad(p1.lat) + degToRad(p2.lat)) / 2);
-  var y = degToRad(p2.lat) - degToRad(p1.lat);
+  final y = degToRad(p2.lat) - degToRad(p1.lat);
   return radius * math.sqrt(x * x + y * y);
 }
 
-double computeHeading(LatLng p1, LatLng p2) {
+num computeHeading(LatLng p1, LatLng p2) {
   assert(p1 != null);
   assert(p2 != null);
   final dLng = degToRad(p2.lng) - degToRad(p1.lng);
@@ -122,7 +125,7 @@ LatLng computeOffset(
   LatLng from,
   num distance,
   num heading, {
-  num radius = EARTH_RADIUS,
+  num radius = earthRadius,
 }) {
   assert(from != null);
   assert(distance != null);
