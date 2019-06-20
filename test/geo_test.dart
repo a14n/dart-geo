@@ -121,4 +121,62 @@ void main() {
       expect(p2.lng.round(), equals(45));
     });
   });
+  group('PolylineCodec', () {
+    test('encode', () {
+      expect(
+        const PolylineCodec().encode(const [
+          LatLng(0, 0),
+        ]),
+        '??',
+      );
+      expect(
+        const PolylineCodec().encode(const [
+          LatLng(-179.9832104, 0),
+        ]),
+        '`~oia@?',
+      );
+      expect(
+        const PolylineCodec().encode(const [
+          LatLng(0, -179.9832104),
+        ]),
+        '?`~oia@',
+      );
+      expect(
+        const PolylineCodec().encode(const [
+          LatLng(38.5, -120.2),
+          LatLng(40.7, -120.95),
+          LatLng(43.252, -126.453),
+        ]),
+        '_p~iF~ps|U_ulLnnqC_mqNvxq`@',
+      );
+    });
+    test('decode', () {
+      expect(
+        const PolylineCodec().decode('??'),
+        const [
+          LatLng(0, 0),
+        ],
+      );
+      expect(
+        const PolylineCodec().decode('`~oia@?'),
+        const [
+          LatLng(-179.98321, 0),
+        ],
+      );
+      expect(
+        const PolylineCodec().decode('?`~oia@'),
+        const [
+          LatLng(0, -179.98321),
+        ],
+      );
+      expect(
+        const PolylineCodec().decode('_p~iF~ps|U_ulLnnqC_mqNvxq`@'),
+        const [
+          LatLng(38.5, -120.2),
+          LatLng(40.7, -120.95),
+          LatLng(43.252, -126.453),
+        ],
+      );
+    });
+  });
 }

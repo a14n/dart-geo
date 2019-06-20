@@ -1,3 +1,7 @@
+# 0.2.1 (2018-08-01)
+
+- Add a `PolylineCodec` to convert list of location from/to string according to the [Encoded Polyline Algorithm Format](https://developers.google.com/maps/documentation/utilities/polylinealgorithm).
+
 # 0.2.0 (2018-08-01)
 
 - Migration to Dart 2.
