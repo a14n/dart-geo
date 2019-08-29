@@ -1,4 +1,12 @@
-# 0.2.1 (2018-08-01)
+# 0.2.3 (2019-08-29)
+
+- Update CHANGELOG.
+
+# 0.2.2 (2019-08-29)
+
+- Improve README.
+
+# 0.2.1 (2019-08-01)
 
 - Add a `PolylineCodec` to convert list of location from/to string according to the [Encoded Polyline Algorithm Format](https://developers.google.com/maps/documentation/utilities/polylinealgorithm).
 
