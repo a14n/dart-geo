@@ -13,17 +13,17 @@
 // limitations under the License.
 
 import 'dart:convert';
-import 'dart:math' as math;
+import 'dart:math';
 
 import 'package:meta/meta.dart';
 
 // see http://www.movable-type.co.uk/scripts/latlong.html
 
 /// Convert degrees to radians
-num degToRad(num deg) => deg * (math.pi / 180.0);
+num degToRad(num deg) => deg * (pi / 180.0);
 
 /// Convert radians to degrees
-num radToDeg(num rad) => rad * (180.0 / math.pi);
+num radToDeg(num rad) => rad * (180.0 / pi);
 
 /// The coordinates in Degrees
 @immutable
@@ -31,15 +31,16 @@ class LatLng {
   const LatLng(
     this.lat,
     this.lng,
-  ); //:assert(lat != null), assert(lng != null);
+  )   : assert(lat != null),
+        assert(lng != null);
 
   final num lat;
   final num lng;
 
-  bool isCloseTo(LatLng other, {num maxMargin = 1.0E-9}) {
+  bool isCloseTo(LatLng other, {num maxMargin = 1.0e-9}) {
     assert(other != null);
     assert(maxMargin != null && maxMargin >= 0);
-    final margin = math.max((lat - other.lat).abs(), (lng - other.lng).abs());
+    final margin = max((lat - other.lat).abs(), (lng - other.lng).abs());
     return margin <= maxMargin;
   }
 
@@ -80,11 +81,11 @@ num computeDistanceHaversine(
   assert(p1 != null);
   assert(p2 != null);
   assert(radius != null);
-  final sDLat = math.sin((degToRad(p2.lat) - degToRad(p1.lat)) / 2);
-  final sDLng = math.sin((degToRad(p2.lng) - degToRad(p1.lng)) / 2);
+  final sDLat = sin((degToRad(p2.lat) - degToRad(p1.lat)) / 2);
+  final sDLng = sin((degToRad(p2.lng) - degToRad(p1.lng)) / 2);
   final a = sDLat * sDLat +
-      sDLng * sDLng * math.cos(degToRad(p1.lat)) * math.cos(degToRad(p2.lat));
-  final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+      sDLng * sDLng * cos(degToRad(p1.lat)) * cos(degToRad(p2.lat));
+  final c = 2 * atan2(sqrt(a), sqrt(1 - a));
   return radius * c;
 }
 
@@ -97,16 +98,16 @@ num computeDistanceSphericalLawCosines(
   assert(p1 != null);
   assert(p2 != null);
   assert(radius != null);
-  final cosLat1 = math.cos(degToRad(p1.lat));
-  final sinLat1 = math.sin(degToRad(p1.lat));
-  final cosLat2 = math.cos(degToRad(p2.lat));
-  final sinLat2 = math.sin(degToRad(p2.lat));
+  final cosLat1 = cos(degToRad(p1.lat));
+  final sinLat1 = sin(degToRad(p1.lat));
+  final cosLat2 = cos(degToRad(p2.lat));
+  final sinLat2 = sin(degToRad(p2.lat));
   return radius *
-      math.acos(
-          cosLat1 * cosLat2 * math.cos(degToRad(p1.lng) - degToRad(p2.lng)) +
-              sinLat1 * sinLat2);
+      acos(cosLat1 * cosLat2 * cos(degToRad(p1.lng) - degToRad(p2.lng)) +
+          sinLat1 * sinLat2);
 }
 
+/// Compute distance between 2 points by using [Pythagorean theorem](https://en.wikipedia.org/wiki/Pythagorean_theorem) on an [equi­rectangular projec­tion](https://en.wikipedia.org/wiki/Equirectangular_projection).
 num computeDistanceEquirectangularApproximation(
   LatLng p1,
   LatLng p2, {
@@ -116,9 +117,9 @@ num computeDistanceEquirectangularApproximation(
   assert(p2 != null);
   assert(radius != null);
   final x = (degToRad(p2.lng) - degToRad(p1.lng)) *
-      math.cos((degToRad(p1.lat) + degToRad(p2.lat)) / 2);
+      cos((degToRad(p1.lat) + degToRad(p2.lat)) / 2);
   final y = degToRad(p2.lat) - degToRad(p1.lat);
-  return radius * math.sqrt(x * x + y * y);
+  return radius * sqrt(x * x + y * y);
 }
 
 /// Compute heading from [p1] to [p2]. The result is between -180 exclusive and 180 inclusive.
@@ -131,10 +132,10 @@ num computeHeading(LatLng p1, LatLng p2) {
   assert(p1 != null);
   assert(p2 != null);
   final dLng = degToRad(p2.lng) - degToRad(p1.lng);
-  final y = math.sin(dLng) * math.cos(degToRad(p2.lat));
-  final x = math.cos(degToRad(p1.lat)) * math.sin(degToRad(p2.lat)) -
-      math.sin(degToRad(p1.lat)) * math.cos(degToRad(p2.lat)) * math.cos(dLng);
-  return radToDeg(math.atan2(y, x));
+  final y = sin(dLng) * cos(degToRad(p2.lat));
+  final x = cos(degToRad(p1.lat)) * sin(degToRad(p2.lat)) -
+      sin(degToRad(p1.lat)) * cos(degToRad(p2.lat)) * cos(dLng);
+  return radToDeg(atan2(y, x));
 }
 
 /// Compute the [LatLng] resulting from moving a [distance] (in meters) from [origin] in the specified [heading] (expressed in degrees clockwise from north).
@@ -150,11 +151,11 @@ LatLng computeOffset(
   assert(radius != null);
   final h = degToRad(heading);
   final a = distance / radius;
-  final lat2 = math.asin(math.sin(degToRad(origin.lat)) * math.cos(a) +
-      math.cos(degToRad(origin.lat)) * math.sin(a) * math.cos(h));
+  final lat2 = asin(sin(degToRad(origin.lat)) * cos(a) +
+      cos(degToRad(origin.lat)) * sin(a) * cos(h));
   final lng2 = degToRad(origin.lng) +
-      math.atan2(math.sin(h) * math.sin(a) * math.cos(degToRad(origin.lat)),
-          math.cos(a) - math.sin(degToRad(origin.lat)) * math.sin(lat2));
+      atan2(sin(h) * sin(a) * cos(degToRad(origin.lat)),
+          cos(a) - sin(degToRad(origin.lat)) * sin(lat2));
   return LatLng(radToDeg(lat2), radToDeg(lng2));
 }
 
