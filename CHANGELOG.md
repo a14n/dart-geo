@@ -1,3 +1,7 @@
+# 0.3.0 (2021-04-01)
+
+- Migration to null safety.
+
 # 0.2.4 (2019-08-29)
 
 - Add example.

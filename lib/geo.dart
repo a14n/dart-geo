@@ -31,15 +31,13 @@ class LatLng {
   const LatLng(
     this.lat,
     this.lng,
-  )   : assert(lat != null),
-        assert(lng != null);
+  );
 
   final num lat;
   final num lng;
 
   bool isCloseTo(LatLng other, {num maxMargin = 1.0e-9}) {
-    assert(other != null);
-    assert(maxMargin != null && maxMargin >= 0);
+    assert(maxMargin >= 0);
     final margin = max((lat - other.lat).abs(), (lng - other.lng).abs());
     return margin <= maxMargin;
   }
@@ -65,12 +63,8 @@ num computeDistanceBetween(
   LatLng p1,
   LatLng p2, {
   num radius = earthRadius,
-}) {
-  assert(p1 != null);
-  assert(p2 != null);
-  assert(radius != null);
-  return computeDistanceHaversine(p1, p2, radius: radius);
-}
+}) =>
+    computeDistanceHaversine(p1, p2, radius: radius);
 
 /// Compute distance between 2 points according to [Haversine formula](https://en.wikipedia.org/wiki/Haversine_formula).
 num computeDistanceHaversine(
@@ -78,9 +72,6 @@ num computeDistanceHaversine(
   LatLng p2, {
   num radius = earthRadius,
 }) {
-  assert(p1 != null);
-  assert(p2 != null);
-  assert(radius != null);
   final sDLat = sin((degToRad(p2.lat) - degToRad(p1.lat)) / 2);
   final sDLng = sin((degToRad(p2.lng) - degToRad(p1.lng)) / 2);
   final a = sDLat * sDLat +
@@ -95,9 +86,6 @@ num computeDistanceSphericalLawCosines(
   LatLng p2, {
   num radius = earthRadius,
 }) {
-  assert(p1 != null);
-  assert(p2 != null);
-  assert(radius != null);
   final cosLat1 = cos(degToRad(p1.lat));
   final sinLat1 = sin(degToRad(p1.lat));
   final cosLat2 = cos(degToRad(p2.lat));
@@ -113,10 +101,7 @@ num computeDistanceEquirectangularApproximation(
   LatLng p2, {
   num radius = earthRadius,
 }) {
-  assert(p1 != null);
-  assert(p2 != null);
-  assert(radius != null);
-  final x = (degToRad(p2.lng) - degToRad(p1.lng)) *
+  final num x = (degToRad(p2.lng) - degToRad(p1.lng)) *
       cos((degToRad(p1.lat) + degToRad(p2.lat)) / 2);
   final y = degToRad(p2.lat) - degToRad(p1.lat);
   return radius * sqrt(x * x + y * y);
@@ -129,8 +114,6 @@ num computeDistanceEquirectangularApproximation(
 /// * `computeHeading(LatLng(1, 0), LatLng(0, 0))` returns `180.0` (south direction).
 /// * `computeHeading(LatLng(0, 0), LatLng(0, -1))` returns `-90.0` (west direction).
 num computeHeading(LatLng p1, LatLng p2) {
-  assert(p1 != null);
-  assert(p2 != null);
   final dLng = degToRad(p2.lng) - degToRad(p1.lng);
   final y = sin(dLng) * cos(degToRad(p2.lat));
   final x = cos(degToRad(p1.lat)) * sin(degToRad(p2.lat)) -
@@ -145,15 +128,11 @@ LatLng computeOffset(
   num heading, {
   num radius = earthRadius,
 }) {
-  assert(origin != null);
-  assert(distance != null);
-  assert(heading != null);
-  assert(radius != null);
   final h = degToRad(heading);
   final a = distance / radius;
   final lat2 = asin(sin(degToRad(origin.lat)) * cos(a) +
       cos(degToRad(origin.lat)) * sin(a) * cos(h));
-  final lng2 = degToRad(origin.lng) +
+  final num lng2 = degToRad(origin.lng) +
       atan2(sin(h) * sin(a) * cos(degToRad(origin.lat)),
           cos(a) - sin(degToRad(origin.lat)) * sin(lat2));
   return LatLng(radToDeg(lat2), radToDeg(lng2));
