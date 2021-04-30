@@ -1,5 +1,7 @@
 # Dart Geo
 
+[![Build Status](https://github.com/a14n/dart-geo/actions/workflows/dart.yml/badge.svg)](https://github.com/a14n/dart-geo/actions/workflows/dart.yml)
+
 This project provides a set of utility functions for geographic computations.
 
 You can:
