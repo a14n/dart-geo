@@ -14,8 +14,9 @@
 
 import 'dart:math' show pi;
 
+import 'package:expector/expector.dart';
 import 'package:geo/geo.dart';
-import 'package:test/test.dart';
+import 'package:test/test.dart' show group, test;
 
 void main() {
   group('LatLng', () {
@@ -24,69 +25,69 @@ void main() {
       final p1 = ll(1, 2.5);
       final p2 = ll(1, 2.5);
       final p3 = ll(1, 3);
-      expect(p1 == p2, equals(true));
-      expect(p1 == p3, equals(false));
+      expectThat(p1 == p2).isTrue;
+      expectThat(p1 == p3).isFalse;
     });
   });
   group('computeDistanceBetween', () {
     test('distance to the same point is 0', () {
       const p = LatLng(0, 0);
-      expect(computeDistanceBetween(p, p), equals(0));
+      expectThat(computeDistanceBetween(p, p)).equals(0);
     });
 
     test('distance between 0,0 and 90,0 is around 10,000km', () {
       const p1 = LatLng(0, 0);
       const p2 = LatLng(90, 0);
-      expect(computeDistanceBetween(p1, p2) ~/ 1000000, equals(10));
+      expectThat(computeDistanceBetween(p1, p2) ~/ 1000000).equals(10);
     });
 
     test('distance between 0,-90 and 0,90 is around 20,000km', () {
       const p1 = LatLng(0, -90);
       const p2 = LatLng(0, 90);
-      expect(computeDistanceBetween(p1, p2) ~/ 1000000, equals(20));
+      expectThat(computeDistanceBetween(p1, p2) ~/ 1000000).equals(20);
     });
 
     test('distance between 0,-180 and 0,180 is 0', () {
       const p1 = LatLng(0, -180);
       const p2 = LatLng(0, 180);
-      expect(computeDistanceBetween(p1, p2).toInt(), equals(0));
+      expectThat(computeDistanceBetween(p1, p2).toInt()).equals(0);
     });
 
     test('distance between 0,0 and 3600,3600 is 0', () {
       const p1 = LatLng(0, 0);
       const p2 = LatLng(3600, 3600);
-      expect(computeDistanceBetween(p1, p2).toInt(), equals(0));
+      expectThat(computeDistanceBetween(p1, p2).toInt()).equals(0);
     });
   });
 
   group('computeHeading', () {
     test('heading to the same point is 0', () {
       const p = LatLng(0, 0);
-      expect(computeHeading(p, p), equals(0));
+      expectThat(computeHeading(p, p)).equals(0);
     });
 
     test('heading between 0,0 and 90,0 is 0', () {
       const p1 = LatLng(0, 0);
       const p2 = LatLng(90, 0);
-      expect(computeHeading(p1, p2), equals(0));
+      expectThat(computeHeading(p1, p2)).equals(0);
     });
 
     test('heading between 0,0 and -90,0 is 180', () {
       const p1 = LatLng(0, 0);
       const p2 = LatLng(-90, 0);
-      expect(computeHeading(p1, p2), equals(180));
+      expectThat(computeHeading(p1, p2)).equals(180);
     });
 
     test('heading between 0,-90 and 0,90 is -90', () {
       const p1 = LatLng(0, -90);
       const p2 = LatLng(0, 90);
-      expect(computeHeading(p1, p2), equals(90));
+      expectThat(computeHeading(p1, p2)).equals(90);
     });
 
     test('heading between 0,-180 and 0,180 is -90', () {
       const p1 = LatLng(0, -180);
       const p2 = LatLng(0, 180);
-      expect(computeHeading(p1, p2), equals(-90));
+      expectThat(computeHeading(p1, p2)).equals(-90);
     });
   });
 
@@ -94,89 +95,66 @@ void main() {
     test('offset from 0,0 with heading 0 and distance 10,000,000 is 0,90', () {
       const p1 = LatLng(0, 0);
       final p2 = computeOffset(p1, earthRadius * pi / 2, 0);
-      expect(p2.lat, equals(90));
-      expect(p2.lng, equals(0));
+      expectThat(p2.lat).equals(90);
+      expectThat(p2.lng).equals(0);
     });
 
     test('offset from 0,0 with heading 180 and distance 5,000,000 is 0,-45',
         () {
       const p1 = LatLng(0, 0);
       final p2 = computeOffset(p1, earthRadius * pi / 4, 180);
-      expect(p2.lat.round(), equals(-45));
-      expect(p2.lng.round(), equals(0));
+      expectThat(p2.lat.round()).equals(-45);
+      expectThat(p2.lng.round()).equals(0);
     });
 
     test('offset from 0,0 with heading 180 and distance 10,000,000 is 0,-90',
         () {
       const p1 = LatLng(0, 0);
       final p2 = computeOffset(p1, earthRadius * pi / 2, 180);
-      expect(p2.lat.round(), equals(-90));
+      expectThat(p2.lat.round()).equals(-90);
       // expect(p2.lng, equals(0));
     });
 
     test('offset from 0,0 with heading 90 and distance 5,000,000 is 45,0', () {
       const p1 = LatLng(0, 0);
       final p2 = computeOffset(p1, earthRadius * pi / 4, 90);
-      expect(p2.lat.round(), equals(0));
-      expect(p2.lng.round(), equals(45));
+      expectThat(p2.lat.round()).equals(0);
+      expectThat(p2.lng.round()).equals(45);
     });
   });
   group('PolylineCodec', () {
     test('encode', () {
-      expect(
-        const PolylineCodec().encode(const [
-          LatLng(0, 0),
-        ]),
-        '??',
-      );
-      expect(
-        const PolylineCodec().encode(const [
-          LatLng(-179.9832104, 0),
-        ]),
-        '`~oia@?',
-      );
-      expect(
-        const PolylineCodec().encode(const [
-          LatLng(0, -179.9832104),
-        ]),
-        '?`~oia@',
-      );
-      expect(
-        const PolylineCodec().encode(const [
-          LatLng(38.5, -120.2),
-          LatLng(40.7, -120.95),
-          LatLng(43.252, -126.453),
-        ]),
-        '_p~iF~ps|U_ulLnnqC_mqNvxq`@',
-      );
+      expectThat(const PolylineCodec().encode(const [
+        LatLng(0, 0),
+      ])).equals('??');
+      expectThat(const PolylineCodec().encode(const [
+        LatLng(-179.9832104, 0),
+      ])).equals('`~oia@?');
+      expectThat(const PolylineCodec().encode(const [
+        LatLng(0, -179.9832104),
+      ])).equals('?`~oia@');
+      expectThat(const PolylineCodec().encode(const [
+        LatLng(38.5, -120.2),
+        LatLng(40.7, -120.95),
+        LatLng(43.252, -126.453),
+      ])).equals('_p~iF~ps|U_ulLnnqC_mqNvxq`@');
     });
     test('decode', () {
-      expect(
-        const PolylineCodec().decode('??'),
-        const [
-          LatLng(0, 0),
-        ],
-      );
-      expect(
-        const PolylineCodec().decode('`~oia@?'),
-        const [
-          LatLng(-179.98321, 0),
-        ],
-      );
-      expect(
-        const PolylineCodec().decode('?`~oia@'),
-        const [
-          LatLng(0, -179.98321),
-        ],
-      );
-      expect(
-        const PolylineCodec().decode('_p~iF~ps|U_ulLnnqC_mqNvxq`@'),
-        const [
-          LatLng(38.5, -120.2),
-          LatLng(40.7, -120.95),
-          LatLng(43.252, -126.453),
-        ],
-      );
+      expectThat(const PolylineCodec().decode('??')).equals(const [
+        LatLng(0, 0),
+      ]);
+      expectThat(const PolylineCodec().decode('`~oia@?')).equals(const [
+        LatLng(-179.98321, 0),
+      ]);
+      expectThat(const PolylineCodec().decode('?`~oia@')).equals(const [
+        LatLng(0, -179.98321),
+      ]);
+      expectThat(const PolylineCodec().decode('_p~iF~ps|U_ulLnnqC_mqNvxq`@'))
+          .equals(const [
+        LatLng(38.5, -120.2),
+        LatLng(40.7, -120.95),
+        LatLng(43.252, -126.453),
+      ]);
     });
   });
 }
