@@ -165,7 +165,7 @@ class _PolylineDecoder extends Converter<String, List<LatLng>> {
         })
         .map((e) => e.fold<int>(0, (t, e) => t * 0x20 + e))
         .toList()
-          ..removeLast();
+      ..removeLast();
     final numbers = step5chunks.map((step5) {
       final negative = step5 & 0x1 == 0x1;
       var step4 = step5;
